@@ -1,0 +1,505 @@
+/* ============================================
+   APPLE MUSIC STYLE - PREMIUM DESIGN
+   ============================================ */
+
+:root {
+    --bg-main: #ffffff;
+    --bg-sidebar: #f5f5f7;
+    --text-primary: #1d1d1f;
+    --text-secondary: #86868b;
+    --accent-color: #fa243c;
+    --accent-hover: #e01b2f;
+    --border-color: #e5e5ea;
+    --glass-bg: rgba(250, 250, 250, 0.75);
+    --player-height: 85px;
+    --sidebar-width: 260px;
+    
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    overflow: hidden; /* Main Layout handles overflow */
+}
+
+/* Base Layout */
+.app-layout {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Sidebar */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--bg-sidebar);
+    border-right: 1px solid var(--border-color);
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    resize: horizontal;
+    overflow-y: auto;
+}
+
+.sidebar-header h2 {
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin-left: 12px;
+    margin-bottom: 24px;
+    letter-spacing: -0.5px;
+}
+
+/* Search Box overriding inline */
+.search-box {
+    margin-bottom: 24px;
+    padding: 0 12px;
+}
+#searchInput {
+    width: 100%;
+    background: #e3e3e8;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    outline: none;
+    transition: all 0.2s;
+}
+#searchInput::placeholder {
+    color: #8e8e93;
+}
+#searchInput:focus {
+    box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+.sidebar-nav h3 {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin: 16px 0 8px 12px;
+    letter-spacing: 0.5px;
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease;
+    margin-bottom: 2px;
+}
+
+.nav-btn svg {
+    color: var(--accent-color);
+}
+
+.nav-btn:hover {
+    background: #e5e5ea;
+}
+
+.nav-btn.active {
+    background: #e5e5ea;
+    font-weight: 600;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 36px 48px;
+    position: relative;
+    padding-bottom: 120px; /* Space for player */
+}
+
+.content-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 16px;
+}
+
+/* Songs List */
+.song-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.song-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background 0.2s ease;
+    border-radius: 6px;
+}
+.song-item:hover {
+    background: #f5f5f7;
+}
+
+.song-item::before {
+    /* Album Art Placeholder */
+    content: '';
+    display: block;
+    width: 44px;
+    height: 44px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #e5e5ea, #d1d1d6);
+    margin-right: 16px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.song-item.active::before {
+    background: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(250, 36, 60, 0.3);
+}
+
+.song-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.song-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.song-artist {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.song-meta {
+    display: none; /* Hide file size for cleaner look */
+}
+
+/* Buttons */
+.add-to-playlist-btn {
+    background: transparent;
+    color: var(--accent-color);
+    border: 1px solid var(--accent-color);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-to-playlist-btn:hover {
+    background: var(--accent-color);
+    color: white;
+}
+
+/* Playlists / Library */
+.create-playlist-section {
+    margin-bottom: 32px;
+}
+
+.create-playlist-form {
+    display: flex;
+    gap: 12px;
+    max-width: 400px;
+}
+
+#playlistName {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #d1d1d6;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    outline: none;
+}
+#playlistName:focus {
+    border-color: var(--accent-color);
+}
+
+.create-playlist-btn {
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 0 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.create-playlist-btn:hover {
+    background: var(--accent-hover);
+}
+
+.my-playlists-section h3 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+.playlists-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 24px;
+}
+
+.playlist-card {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.playlist-card::before {
+    content: '';
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, #fa243c, #ff3b30);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 12px rgba(250, 36, 60, 0.3);
+}
+
+.playlist-card:hover {
+    transform: scale(1.03);
+}
+
+.playlist-card h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.playlist-card p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.playlist-card .song-count {
+    display: none;
+}
+
+/* Playlist View Header */
+.playlist-view-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: var(--accent-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+#playlistNameDisplay {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.playlist-song-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    transition: background 0.2s;
+    border-radius: 6px;
+}
+.playlist-song-item:hover {
+    background: #f5f5f7;
+}
+.playlist-song-info {
+    flex: 1;
+}
+.playlist-song-title {
+    font-weight: 500;
+}
+.playlist-song-artist {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+.remove-from-playlist-btn {
+    background: transparent;
+    color: #ff3b30;
+    border: none;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+/* Bottom Player (Glassmorphism) */
+.player-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--player-height);
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-top: 1px solid rgba(0,0,0,0.1);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+}
+
+.player-progress-bar {
+    height: 2px;
+    background: rgba(0,0,0,0.1);
+    width: 100%;
+}
+
+.player-flex {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 32px;
+    justify-content: center;
+    position: relative;
+}
+
+.player-controls-left {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    position: absolute;
+    left: 32px;
+}
+
+.control-btn {
+    background: none;
+    border: none;
+    color: #1d1d1f;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+
+.control-btn:hover {
+    color: var(--accent-color);
+}
+
+.player-now-playing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 400px;
+}
+.player-now-playing strong {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+.player-now-playing span {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+/* Format the native audio to be cleaner or smaller */
+.apple-audio {
+    position: absolute;
+    right: 32px;
+    height: 40px;
+    opacity: 0.9;
+}
+
+/* Empty states */
+.empty-state, .empty-playlist {
+    text-align: center;
+    padding: 60px 0;
+    color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .app-layout {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding: 16px;
+    }
+    .main-content {
+        padding: 24px 16px;
+    }
+    .player-flex {
+        padding: 0 16px;
+        justify-content: space-between;
+    }
+    .player-controls-left {
+        position: static;
+    }
+    .apple-audio {
+        display: none; /* hide native controls on mobile to save space */
+    }
+}
+
+/* Dark Mode Overrides */
+[data-theme="dark"] {
+    --bg-main: #000000;
+    --bg-sidebar: #1c1c1e;
+    --text-primary: #f5f5f7;
+    --text-secondary: #86868b;
+    --border-color: #38383a;
+    --glass-bg: rgba(28, 28, 30, 0.75);
+}
+[data-theme="dark"] #searchInput, [data-theme="dark"] #playlistName {
+    background: #2c2c2e;
+    color: #f5f5f7;
+}
+[data-theme="dark"] .song-item:hover, [data-theme="dark"] .playlist-song-item:hover {
+    background: #2c2c2e;
+}
+[data-theme="dark"] .song-item::before {
+    background: linear-gradient(135deg, #38383a, #2c2c2e);
+}
+[data-theme="dark"] .sidebar-nav .nav-btn:hover, [data-theme="dark"] .sidebar-nav .nav-btn.active {
+    background: #2c2c2e;
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+    position: absolute;
+    top: 36px;
+    right: 48px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    border-radius: 50%;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    z-index: 10;
+}
+.theme-toggle-btn:hover {
+    background: var(--border-color);
+}

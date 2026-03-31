@@ -1,0 +1,22 @@
+{
+  "name": "web-music-player-main",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "body-parser": "^2.2.2",
+    "express": "^5.2.1",
+    "google-auth-library": "^10.6.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.3.3",
+    "multer": "^2.1.1",
+    "node-id3": "^0.2.9"
+  }
+}

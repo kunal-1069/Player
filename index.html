@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music</title>
+    <!-- SF Pro Display font equivalent via system font stack -->
+    <link rel="stylesheet" href="css/indexstyle.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Apple Music</h2>
+            </div>
+            
+            <div class="search-box" id="searchBox">
+                <input type="text" id="searchInput" placeholder="Search">
+            </div>
+
+            <nav class="sidebar-nav">
+                <h3>Apple Music</h3>
+                <button class="nav-btn active" onclick="showSection('home'); activateNav(this);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    Listen Now
+                </button>
+                <button class="nav-btn" onclick="showSection('search'); activateNav(this);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    Browse
+                </button>
+                
+                <h3>Library</h3>
+                <button class="nav-btn" onclick="showSection('library'); activateNav(this);">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                    Playlists
+                </button>
+            </nav>
+        </aside>
+        
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeIcon"></button>
+            <div class="content-header">
+                <h1 id="pageTitle">Listen Now</h1>
+            </div>
+
+            <!-- Home/All Songs Section -->
+            <div id="homeSection" class="songs-section">
+                <div id="songList" class="song-list"></div>
+            </div>
+            
+            <!-- Library/Playlists Section -->
+            <div id="librarySection" class="playlist-main-section" style="display: none;">
+                <div class="create-playlist-section">
+                    <h3>New Playlist</h3>
+                    <div class="create-playlist-form">
+                        <input type="text" id="playlistName" placeholder="Playlist Name">
+                        <button id="createPlaylistBtn" class="create-playlist-btn">Create</button>
+                    </div>
+                </div>
+                
+                <div class="my-playlists-section">
+                    <div id="playlistContainer" class="playlists-grid"></div>
+                </div>
+                
+                <div id="playlistView" class="playlist-view" style="display: none;">
+                    <div class="playlist-view-header">
+                        <button class="back-btn" onclick="backToPlaylists()">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                        </button>
+                        <h2 id="playlistNameDisplay"></h2>
+                    </div>
+                    <div id="playlistSongsList" class="playlist-songs-list"></div>
+                </div>
+            </div>
+            
+            <!-- Bottom spacing so player doesn't cover content -->
+            <div class="bottom-spacer"></div>
+        </main>
+
+        <!-- Player Controls (Fixed Bottom) -->
+        <div class="player-controls">
+            <div class="player-progress-bar"></div>
+            <div class="player-flex">
+                <div class="player-controls-left">
+                    <button class="control-btn" id="prevBtn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M11 5v14l-7-7 7-7zm2 0v14l7-7-7-7z"/></svg>
+                    </button>
+                    <button class="control-btn" id="nextBtn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M13 5v14l7-7-7-7zM4 5v14l7-7-7-7z"/></svg>
+                    </button>
+                </div>
+                
+                <div class="player-now-playing" id="nowPlaying">
+                    <span class="placeholder-text">Not Playing</span>
+                </div>
+                
+                <audio id="audioPlayer" class="apple-audio" controls>
+                    <source src="">
+                </audio>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function activateNav(btn) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            let text = btn.innerText.trim();
+            document.getElementById('pageTitle').innerText = text === 'Browse' ? 'Search' : text;
+        }
+    </script>
+    <script src="js/theme.js"></script>
+    <script src="js/player.js"></script>
+</body>
+</html>
