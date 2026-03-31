@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Apple Music Style</title>
     <link rel="stylesheet" href="css/admin-style.css">
     <link rel="stylesheet" href="css/auth-style.css">
+    <link rel="stylesheet" href="css/toast.css">
 </head>
+
 <body>
     <div class="auth-wrapper">
         <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeIcon"></button>
@@ -15,7 +18,7 @@
                 <h2>Apple Music</h2>
                 <span class="auth-subtitle">Admin Console</span>
             </div>
-            
+
             <div id="loginFormContainer">
                 <h1 class="auth-title">Sign In</h1>
                 <p class="auth-desc">Manage your music library and settings.</p>
@@ -42,12 +45,14 @@
                     Already have an account? <a href="#" onclick="switchAuthMode('login')">Sign in</a>
                 </div>
             </div>
-            
+
             <a href="index.html" class="back-link">Return to Player</a>
         </div>
     </div>
-    
+
+    <script src="js/toast.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/auth.js"></script>
 </body>
+
 </html>

@@ -1,8 +1,13 @@
+const BACKEND_URL = (window.location.protocol === 'http:' || window.location.protocol === 'https:')
+    ? window.location.origin
+    : 'http://localhost:3000';
+
 // Load and display songs from backend
 async function loadAdminSongs() {
     try {
-        const response = await fetch('/songs');
-        const songs = await response.json();
+        const response = await fetch(`${BACKEND_URL}/songs`);
+        const data = await response.json();
+        const songs = Array.isArray(data) ? data : data.songs || [];
         const container = document.getElementById("songsList");
         
         if (!container) return;
@@ -41,13 +46,13 @@ async function uploadSong() {
     const file = fileInput.files[0];
 
     if (!title || !artist || !file) {
-        alert("⚠️ Please fill all fields");
+        showToast("⚠️ Please fill all fields", 'error');
         return;
     }
 
     // Check file size (max 50MB)
     if (file.size > 50 * 1024 * 1024) {
-        alert("❌ File is too large! Maximum size is 50MB.");
+        showToast("❌ File is too large! Maximum size is 50MB.", 'error');
         return;
     }
 
@@ -76,7 +81,7 @@ async function uploadSong() {
         }, 100);
 
         const token = localStorage.getItem('apple-music-token');
-        const response = await fetch('/songs', {
+        const response = await fetch(`${BACKEND_URL}/songs`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` },
             body: formData
@@ -90,7 +95,8 @@ async function uploadSong() {
             throw new Error(errData.error || "Upload failed");
         }
 
-        alert(`✅ "${title}" by ${artist} uploaded successfully!`);
+        showToast(`✅ "${title}" by ${artist} uploaded successfully!`, 'success');
+        localStorage.setItem('songs-updated-at', Date.now().toString());
         
         // Clear form
         document.getElementById("songTitle").value = "";
@@ -102,7 +108,10 @@ async function uploadSong() {
         
     } catch (error) {
         console.error('Upload error:', error);
-        alert(`❌ Error uploading file: ${error.message}`);
+        const errorMessage = error.message && error.message.includes('Failed to fetch')
+            ? 'Server connection failed. Is the backend running at localhost:3000?'
+            : error.message || 'Unknown upload error';
+        showToast(`❌ Error uploading file: ${errorMessage}`, 'error');
     } finally {
         resetUploadButton(uploadBtn, progressBar);
     }
@@ -113,21 +122,33 @@ async function deleteSong(songId) {
     if (confirm("⚠️ Are you sure you want to delete this song? This action cannot be undone!")) {
         try {
             const token = localStorage.getItem('apple-music-token');
-            const response = await fetch(`/songs/${songId}`, {
+            const response = await fetch(`${BACKEND_URL}/songs/${songId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
+            const respBody = await response.json().catch(() => null);
+
             if (!response.ok) {
-                throw new Error("Failed to delete song");
+                if (response.status === 401 || response.status === 403) {
+                    showToast('❌ Unauthorized. Please login again.', 'error');
+                    localStorage.removeItem('apple-music-token');
+                    setTimeout(() => window.location.href = 'auth.html', 1200);
+                    return;
+                }
+
+                const message = respBody && respBody.error ? respBody.error : 'Failed to delete song';
+                throw new Error(message);
             }
 
-            alert(`✅ Song has been deleted successfully!`);
+            localStorage.setItem('songs-updated-at', Date.now().toString());
+            showToast(`✅ Song has been deleted successfully!`, 'success');
             loadAdminSongs(); // Refresh the list
-            
+
         } catch (error) {
             console.error('Delete error:', error);
-            alert("❌ Error deleting song");
+            const errMessage = (error && error.message) ? error.message : 'Error deleting song';
+            showToast(`❌ ${errMessage}`, 'error');
         }
     }
 }
@@ -193,7 +214,7 @@ async function uploadFolder() {
     const files = fileInput.files;
 
     if (!files || files.length === 0) {
-        alert("⚠️ Please select a folder with audio files");
+        showToast("⚠️ Please select a folder with audio files", 'error');
         return;
     }
 
@@ -201,7 +222,7 @@ async function uploadFolder() {
     const audioFiles = Array.from(files).filter(file => file.type.startsWith('audio/'));
     
     if (audioFiles.length === 0) {
-        alert("❌ No audio files found in the selected folder.");
+        showToast("❌ No audio files found in the selected folder.", 'error');
         return;
     }
 
@@ -237,7 +258,7 @@ async function uploadFolder() {
         }, 300);
 
         const token = localStorage.getItem('apple-music-token');
-        const response = await fetch('/songs/batch', {
+        const response = await fetch(`${BACKEND_URL}/songs/batch`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -263,7 +284,8 @@ async function uploadFolder() {
         if (result.errors && result.errors.length > 0) {
             msg += `\n⚠️ Skipped ${result.errors.length} files.`;
         }
-        alert(msg);
+        showToast(msg, 'error');
+        localStorage.setItem('songs-updated-at', Date.now().toString());
         
         // Clear form
         fileInput.value = "";
@@ -274,7 +296,7 @@ async function uploadFolder() {
         
     } catch (error) {
         console.error('Batch upload error:', error);
-        alert(`❌ Error importing folder: ${error.message}`);
+        showToast(`❌ Error importing folder: ${error.message}`, 'error');
         statusText.textContent = "Import failed.";
     } finally {
         uploadBtn.textContent = "Import Folder";

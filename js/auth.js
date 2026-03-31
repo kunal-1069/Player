@@ -8,6 +8,10 @@ function switchAuthMode(mode) {
     }
 }
 
+const BACKEND_URL = (window.location.protocol === 'http:' || window.location.protocol === 'https:')
+    ? window.location.origin
+    : 'http://localhost:3000';
+
 async function handleLogin(e) {
     e.preventDefault();
     const username = document.getElementById('loginUsername').value;
@@ -15,7 +19,7 @@ async function handleLogin(e) {
     const errorDiv = document.getElementById('loginError');
     
     try {
-        const res = await fetch('/auth/login', {
+        const res = await fetch(`${BACKEND_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
@@ -32,7 +36,8 @@ async function handleLogin(e) {
         localStorage.setItem('apple-music-user', data.username);
         window.location.href = 'admin.html';
     } catch (err) {
-        errorDiv.textContent = 'Server connection error';
+        console.error('Login request error:', err);
+        errorDiv.textContent = `Server connection error: ${err.message || 'Unable to reach backend'}`;
     }
 }
 
@@ -43,7 +48,7 @@ async function handleRegister(e) {
     const errorDiv = document.getElementById('regError');
     
     try {
-        const res = await fetch('/auth/register', {
+        const res = await fetch(`${BACKEND_URL}/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
@@ -61,7 +66,8 @@ async function handleRegister(e) {
         localStorage.setItem('apple-music-user', data.username);
         window.location.href = 'admin.html';
     } catch (err) {
-        errorDiv.textContent = 'Server connection error';
+        console.error('Register request error:', err);
+        errorDiv.textContent = `Server connection error: ${err.message || 'Unable to reach backend'}`;
     }
 }
 

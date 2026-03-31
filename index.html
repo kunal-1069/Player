@@ -3,20 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music</title>
+    <title>Pro Music Player</title>
     <!-- SF Pro Display font equivalent via system font stack -->
     <link rel="stylesheet" href="css/indexstyle.css">
+    <link rel="stylesheet" href="css/toast.css">
 </head>
 <body>
     <div class="app-layout">
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <h2>Apple Music</h2>
+                <h2>Pro Music Player</h2>
             </div>
             
-            <div class="search-box" id="searchBox">
-                <input type="text" id="searchInput" placeholder="Search">
+            <div class="search-box" id="searchBox" style="position: relative;">
+                <input type="text" id="searchInput" placeholder="Search" autocomplete="off">
+                <div id="searchHistoryDropdown" class="search-history-dropdown" style="display: none;">
+                    <div class="search-history-header">
+                        <span>Recent Searches</span>
+                        <button id="clearSearchHistoryBtn" class="clear-history-btn">Clear</button>
+                    </div>
+                    <ul id="searchHistoryList" class="search-history-list"></ul>
+                </div>
             </div>
 
             <nav class="sidebar-nav">
@@ -47,6 +55,12 @@
 
             <!-- Home/All Songs Section -->
             <div id="homeSection" class="songs-section">
+                <!-- Recently Played Section -->
+                <div id="recentlyPlayedSection" class="recently-played-section" style="display: none;">
+                    <h2 class="section-heading">Recently Played</h2>
+                    <div id="recentlyPlayedList" class="recently-played-list"></div>
+                </div>
+
                 <div id="songList" class="song-list"></div>
             </div>
             
@@ -81,24 +95,61 @@
 
         <!-- Player Controls (Fixed Bottom) -->
         <div class="player-controls">
-            <div class="player-progress-bar"></div>
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-track">
+                    <div class="progress-filled" id="progressFilled"></div>
+                </div>
+                <div class="time-labels">
+                    <span id="currentTime">00:00</span>
+                    <span id="durationTime">00:00</span>
+                </div>
+            </div>
+
             <div class="player-flex">
+                <div class="player-left">
+                    <div class="player-meta">
+                        <strong id="nowPlayingTitle">Not Playing</strong>
+                        <span id="nowPlayingArtist">Select a track to start playback</span>
+                    </div>
+                </div>
+
                 <div class="player-controls-left">
-                    <button class="control-btn" id="prevBtn">
+                    <button class="control-btn" id="shuffleBtn" title="Shuffle">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+                    </button>
+                    <button class="control-btn" id="prevBtn" title="Previous">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M11 5v14l-7-7 7-7zm2 0v14l7-7-7-7z"/></svg>
                     </button>
-                    <button class="control-btn" id="nextBtn">
+                    <button class="control-btn" id="playPauseBtn" title="Play/Pause">
+                        <svg id="playPauseIcon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21"></polygon></svg>
+                    </button>
+                    <button class="control-btn" id="nextBtn" title="Next">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M13 5v14l7-7-7-7zM4 5v14l7-7-7-7z"/></svg>
                     </button>
+                    <button class="control-btn" id="queueBtn" title="Queue">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18M3 12h12M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    </button>
+                    <button class="control-btn" id="repeatBtn" title="Repeat" style="position: relative;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+                        <span id="repeatOneBadge" style="display: none; position: absolute; top: 11px; left: 13px; font-size: 8px; font-weight: bold; background: var(--bg-main); border-radius: 50%; width: 10px; height: 10px; line-height: 10px; text-align: center;">1</span>
+                    </button>
                 </div>
-                
-                <div class="player-now-playing" id="nowPlaying">
-                    <span class="placeholder-text">Not Playing</span>
+
+                <div class="player-volume">
+                    <label for="volumeSlider">🔊</label>
+                    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.75">
                 </div>
-                
-                <audio id="audioPlayer" class="apple-audio" controls>
-                    <source src="">
-                </audio>
+            </div>
+
+            <audio id="audioPlayer" class="apple-audio"></audio>
+            <div id="queueOverlay" class="queue-overlay" style="display:none;">
+                <div class="queue-box">
+                    <div class="queue-header">
+                        <h4>Play Queue</h4>
+                        <button id="closeQueueBtn">✕</button>
+                    </div>
+                    <div id="queueItems" class="queue-items"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -110,7 +161,14 @@
             let text = btn.innerText.trim();
             document.getElementById('pageTitle').innerText = text === 'Browse' ? 'Search' : text;
         }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js');
+            });
+        }
     </script>
+    <script src="js/toast.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/player.js"></script>
 </body>
