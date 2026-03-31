@@ -6,7 +6,6 @@
     <title>Login - Apple Music Style</title>
     <link rel="stylesheet" href="css/admin-style.css">
     <link rel="stylesheet" href="css/auth-style.css">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <div class="auth-wrapper">
@@ -41,24 +40,6 @@
                 </form>
                 <div class="auth-switch">
                     Already have an account? <a href="#" onclick="switchAuthMode('login')">Sign in</a>
-                </div>
-            </div>
-
-            <div style="margin-top: 24px; text-align: center; border-top: 1px solid var(--border-color); padding-top: 24px; display: flex; justify-content: center;">
-                <div id="g_id_onload"
-                     data-client_id="YOUR_GOOGLE_CLIENT_ID"
-                     data-context="use"
-                     data-ux_mode="popup"
-                     data-callback="handleGoogleCredentialResponse"
-                     data-auto_prompt="false">
-                </div>
-                <div class="g_id_signin"
-                     data-type="standard"
-                     data-shape="pill"
-                     data-theme="outline"
-                     data-text="continue_with"
-                     data-size="large"
-                     data-logo_alignment="left">
                 </div>
             </div>
             
