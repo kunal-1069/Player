@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -7,18 +8,17 @@ const fs = require('fs');
 const NodeID3 = require('node-id3');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { OAuth2Client } = require('google-auth-library');
 
-const JWT_SECRET = 'apple_music_super_secret_key';
-const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID'; // REPLACE THIS WITH YOUR CLIENT ID
-const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+const JWT_SECRET = process.env.JWT_SECRET || 'apple_music_super_secret_key';
+const PORT = process.env.PORT || 3000;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/mydb';
 
 const app = express();
 app.use(bodyParser.json());
 app.use(express.static(__dirname)); // Serve frontend files
 
 // Connect to MongoDB (local or Atlas)
-mongoose.connect('mongodb://127.0.0.1:27017/mydb').then(() => console.log("MongoDB connected"))
+mongoose.connect(MONGODB_URI).then(() => console.log("MongoDB connected"))
   .catch(err => console.log(err));
 
 // Configure Multer for file uploads
@@ -103,33 +103,6 @@ app.post('/auth/login', async (req, res) => {
     res.json({ token, role: user.role, username: user.username });
   } catch (err) {
     res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/auth/google', async (req, res) => {
-  try {
-    const { token } = req.body;
-    const ticket = await googleClient.verifyIdToken({
-      idToken: token,
-      audience: GOOGLE_CLIENT_ID,
-    });
-    const payload = ticket.getPayload();
-    const email = payload.email;
-    const googleId = payload.sub; // Unique identifier
-
-    // Check if user exists by email, acting as username
-    let user = await User.findOne({ username: email });
-    if (!user) {
-        // Automatically create account for Google users
-        user = new User({ username: email, password: googleId, role: 'admin' }); // We hash googleId or just use it as dummy hash
-        await user.save();
-    }
-
-    const jwtToken = jwt.sign({ userId: user._id, role: user.role, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
-    res.json({ token: jwtToken, role: user.role, username: user.username });
-
-  } catch (err) {
-    res.status(401).json({ error: "Invalid Google Token" });
   }
 });
 
@@ -267,4 +240,4 @@ app.delete('/songs/:id', authenticateToken, async (req, res) => {
   }
 });
 
-app.listen(3000, () => console.log("Server running on port 3000"));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

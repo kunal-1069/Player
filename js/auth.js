@@ -71,30 +71,3 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'admin.html';
     }
 });
-
-// Handle Google Sing In
-async function handleGoogleCredentialResponse(response) {
-    const errorDiv = document.getElementById('loginError') || document.getElementById('regError');
-    try {
-        const res = await fetch('/auth/google', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: response.credential })
-        });
-        
-        const data = await res.json();
-        
-        if (!res.ok) {
-            errorDiv.textContent = data.error || 'Google Login failed';
-            return;
-        }
-        
-        localStorage.setItem('apple-music-token', data.token);
-        localStorage.setItem('apple-music-user', data.username);
-        window.location.href = 'admin.html';
-    } catch (err) {
-        errorDiv.textContent = 'Server connection error';
-    }
-}
-
-window.handleGoogleCredentialResponse = handleGoogleCredentialResponse;
