@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
+const { MongoClient, GridFSBucket } = require('mongodb');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const path = require('path');
@@ -38,9 +39,21 @@ const validate = (req, res, next) => {
     next();
 };
 
-// Connect to MongoDB (local or Atlas)
-mongoose.connect(MONGODB_URI).then(() => console.log("MongoDB connected"))
+// Connect to MongoDB (local or Atlas) with Mongoose
+mongoose.connect(MONGODB_URI).then(() => console.log("MongoDB connected (mongoose)"))
   .catch(err => console.log(err));
+
+// Also initialize MongoDB native client for GridFS or raw driver needs
+let gridFSBucket = null;
+async function initMongoClient() {
+    const client = new MongoClient(MONGODB_URI, { useUnifiedTopology: true });
+    await client.connect();
+    const db = client.db();
+    gridFSBucket = new GridFSBucket(db, { bucketName: 'songs' });
+    console.log('MongoClient connected');
+}
+
+initMongoClient().catch(err => console.error('MongoClient connection error:', err));
 
 const coversDir = path.join(__dirname, 'uploads', 'covers');
 if (!fs.existsSync(coversDir)){
@@ -317,6 +330,50 @@ app.post('/songs/batch', authenticateToken, upload.array('songFiles', 100), asyn
   }
 });
 
+app.post('/gridfs/import', authenticateToken, async (req, res) => {
+  try {
+    const { fileName, title, artist } = req.body;
+    if (!fileName || !title || !artist) {
+      return res.status(400).json({ error: 'fileName, title, and artist are required' });
+    }
+
+    const diskPath = path.join(__dirname, 'uploads', fileName);
+    if (!fs.existsSync(diskPath)) {
+      return res.status(404).json({ error: 'Source file not found on disk' });
+    }
+
+    if (!gridFSBucket) {
+      return res.status(500).json({ error: 'GridFS is not initialized' });
+    }
+
+    const uploadStream = gridFSBucket.openUploadStream(fileName, {
+      metadata: { title, artist }
+    });
+    fs.createReadStream(diskPath)
+      .pipe(uploadStream)
+      .on('error', (err) => {
+        console.error('GridFS upload error', err);
+        res.status(500).json({ error: 'GridFS upload failed' });
+      })
+      .on('finish', async () => {
+        const newSong = new Song({
+          title,
+          artist,
+          fileName,
+          fileType: path.extname(fileName).substr(1) || 'audio/mpeg',
+          fileSize: fs.statSync(diskPath).size,
+          coverPath: null,
+          id: Date.now()
+        });
+        await newSong.save();
+        res.json({ success: true, song: newSong, gridFsId: uploadStream.id });
+      });
+  } catch (err) {
+    console.error('GridFS import endpoint error', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/songs', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -369,10 +426,54 @@ app.get('/stream/:songId', async (req, res) => {
     
     const song = await Song.findOne(query);
     if (!song) return res.status(404).send("Song not found");
-    
-    const filePath = path.join(__dirname, 'uploads', song.fileName);
+
+    const fileName = song.fileName;
+
+    // Prefer GridFS stream when available
+    if (gridFSBucket) {
+      const files = await gridFSBucket.find({ filename: fileName }).toArray();
+      if (files.length > 0) {
+        const fileMeta = files[0];
+        const fileSize = fileMeta.length;
+        const range = req.headers.range;
+
+        if (range) {
+          const parts = range.replace(/bytes=/, "").split("-");
+          const start = parseInt(parts[0], 10);
+          const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+          if (start >= fileSize || end >= fileSize) {
+            res.status(416).set({ 'Content-Range': `bytes */${fileSize}` }).end();
+            return;
+          }
+
+          const stream = gridFSBucket.openDownloadStreamByName(fileName, { start, end });
+          const head = {
+            'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+            'Accept-Ranges': 'bytes',
+            'Content-Length': (end - start) + 1,
+            'Content-Type': song.fileType || 'audio/mpeg',
+          };
+          res.writeHead(206, head);
+          stream.pipe(res);
+          return;
+        }
+
+        const stream = gridFSBucket.openDownloadStreamByName(fileName);
+        res.writeHead(200, {
+          'Content-Length': fileSize,
+          'Content-Type': song.fileType || 'audio/mpeg',
+          'Accept-Ranges': 'bytes'
+        });
+        stream.pipe(res);
+        return;
+      }
+    }
+
+    // Fallback: disk file access
+    const filePath = path.join(__dirname, 'uploads', fileName);
     if (!fs.existsSync(filePath)) return res.status(404).send("File not found on disk");
-    
+
     const stat = fs.statSync(filePath);
     const fileSize = stat.size;
     const range = req.headers.range;
@@ -400,6 +501,7 @@ app.get('/stream/:songId', async (req, res) => {
       fs.createReadStream(filePath).pipe(res);
     }
   } catch(err) {
+    console.error('Streaming error:', err);
     res.status(500).send("Streaming error");
   }
 });
